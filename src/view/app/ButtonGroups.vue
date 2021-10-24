@@ -109,7 +109,7 @@
         groups:[],
         formData: {
           name: '',
-          id:0,
+          id:"",
         },
         searchFormData:{
 

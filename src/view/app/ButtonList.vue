@@ -95,6 +95,36 @@
             width:150,
           },
           {
+            title: 'repeatCommandNeeded',
+            key: 'repeatCommandNeeded',
+            width:150,
+
+            render:(h,params)=>{
+              return h('div', [
+                h('Select', {
+                    props: {
+                      placeholder:"是否要重复命令",
+                      value:params.row.repeatCommandNeeded,
+                    },
+                    on: {
+                      input:(v)=>{
+                        this.buttons[params.index].repeatCommandNeeded = v;
+                      },
+                    },
+                  },
+                  [{label:"是",value:true},{label:"否",value:false}].map(g=>{
+                    return h("Option",{
+                      props:{
+                        value:g.value,
+                        label:g.label,
+                      }
+                    });
+                  }),
+                ),
+              ]);
+            }
+          },
+          {
             title: 'data',
             key: 'data',
             render:(h,params)=>{
@@ -219,6 +249,9 @@
         this.buttons.splice(0);
         this.$http.get("/api/app/guz/buttons").then(res=>{
           Object.values(res.data).reverse().map((v)=>{
+            if(v.repeatCommandNeeded == undefined) {
+              v.repeatCommandNeeded = false;
+            }
             if(this.searchForm.group < 0) {
               this.data.push(v);
             } else if(this.searchForm.group == v.group) {
