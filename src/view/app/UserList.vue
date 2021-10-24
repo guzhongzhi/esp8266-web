@@ -241,8 +241,10 @@
               c: "",
               stepper: "",
               pinReaderWriter: {
-                pin: 0,
-                value: 0,
+                p: 0,
+                v: 0,
+                t: 0,
+                tv: 0,
                 data: null,
               }
             }
