@@ -3,6 +3,10 @@
     <bar title="应用管理" :closable="false" icon="md-settings"></bar>
     <Table :columns="columns1" :data="data1"></Table>
 
+    <div style="padding:10px;">
+    <Button @click="goToNotifications" type="error">
+      消息通知</Button>
+    </div>
   </div>
 </template>
 
@@ -80,6 +84,11 @@
             date: '2016-10-04'
           }
         ]
+      }
+    },
+    methods:{
+      goToNotifications() {
+        this.$router.push("notifications");
       }
     }
   }

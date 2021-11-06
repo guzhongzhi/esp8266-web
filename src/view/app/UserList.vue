@@ -9,18 +9,24 @@
         <ListItem>最后更新: {{user.updatedAt}}</ListItem>
         <ListItem>固件版本: {{user.v}}</ListItem>
         <ListItem  style="text-align: left; display: inline">
-          <Collapse v-for="plugin in user.plugins" style="width: 100%">
+          <Collapse v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
             <Panel>
               {{plugin.title}}
               <div  slot="content" v-if="plugin.initialCommands">
                 InitCommands:{{plugin.initialCommands}}
+                <br/>
                 <div v-if="plugin.initialCommands">
-                  <div v-for="cmd in plugin.initialCommands">
-                    <div>
+                  <div v-for="(cmd,initCmdIdx) in plugin.initialCommands">
+                    <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
+                             :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
+
+                    <div style="margin-top:10px; display: none">
                       <div v-if="cmd.c=='sd'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
                           值: <input-number v-model="cmd.pin.v"></input-number>
+                          持续时间: <input-number v-model="cmd.pin.t"></input-number>
+                          持续时间后值: <input-number v-model="cmd.pin.tv"></input-number>
                         </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
@@ -70,18 +76,27 @@
 
                         <div style="padding:10px 0px;">
                           <template v-for="item in cmd.buttonGroups">
-                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGruopName(item)}}</Button> &nbsp;
+                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGroupName(item)}}</Button> &nbsp;
                           </template>
                         </div>
+                      </div>
+
+                      <div style="padding:10px 0px;">
+                        <Button type="error" @click="deleteInitCmd(initCmdIdx,plugin.initialCommands)">删除</Button>
                       </div>
                     </div>
                   </div>
                 </div>
 
+                <div style="height:20px;border-bottom: solid 1px #e1e1e1;margin-bottom: 20px;"> </div>
                 <div v-if="plugin.commands">
                   Commands:{{plugin.commands}}
+                  <br/>
                     <div v-for="cmd in plugin.commands">
-                    <div>
+                      <Button type="success" @click="addToInitialCommands(cmd,plugin)">添加到初始命令</Button>
+                      <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
+                               :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
+                    <div style="display: none">
                       <div v-if="cmd.c=='sd'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
@@ -97,6 +112,8 @@
                       <div v-if="cmd.c=='rd'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
+                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
+                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
                         </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
@@ -106,6 +123,8 @@
                       <div v-if="cmd.c=='rt'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
+                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
+                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
                         </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
@@ -115,6 +134,8 @@
                       <div v-if="cmd.c=='ra'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
+                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
+                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
                         </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
@@ -122,14 +143,21 @@
                       </div>
 
                       <div v-if="cmd.c=='ra0'">
+                        <div>
+                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
+                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
+                        </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
                                 @click="readAnalog(user.m,cmd)">读取A0模拟信号</Button>
                       </div>
+
                       <div v-if="cmd.c=='sa'">
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
                           值: <input-number v-model="cmd.pin.v"></input-number>
+                          持续时间: <input-number v-model="cmd.pin.t"></input-number>
+                          持续时间后值: <input-number v-model="cmd.pin.tv"></input-number>
                         </div>
                         <Button :type="cmd.pin.v == 0? 'warning':'error'"
                                 :loading="cmd.loading"
@@ -165,11 +193,9 @@
                       </div>
 
                       <div v-if="cmd.buttonGroups">
-
                         <div style="padding:10px 0px">
                           引脚: <input-number v-model="cmd.pin.p"></input-number>
                         </div>
-
                         <div style="padding:10px 0px">
                           红外遥控板:
                           <Select v-model="cmd.buttonGroups" multiple style="width:100%">
@@ -181,7 +207,7 @@
                         <div style="padding:10px 0px;">
                           <template v-for="item in cmd.buttonGroups">
                             <span style="padding:10px">
-                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGruopName(item)}}</Button> &nbsp;
+                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGroupName(item)}}</Button> &nbsp;
                               </span>
                           </template>
                         </div>
@@ -221,19 +247,22 @@
   import Cell from "../../../node_modules/view-design/src/components/cell/cell.vue";
   import Bar from "../../components/Bar.vue";
   import ISwitch from "../../../node_modules/view-design/src/components/switch/switch.vue";
+  import Command from "../../components/Command";
 
   export default {
     components: {
+      Command,
       ISwitch,
       Bar,
       Cell
     },
     name: 'UserList',
     data() {
+      self = this;
       return {
         stepperBtnLoading:false,
         stepperBtnRevLoading:false,
-
+        parentDevice:self,
         defaultPlugin: {
           title: "",
           commands: [
@@ -245,6 +274,8 @@
                 v: 0,
                 t: 0,
                 tv: 0,
+                le:false,
+                lpi:10000,
                 data: null,
               }
             }
@@ -268,6 +299,13 @@
       this.ws();
     },
     methods: {
+      addToInitialCommands(cmd,plugin) {
+        console.log(plugin);
+        plugin.initialCommands.push(JSON.parse(JSON.stringify(cmd)));
+      },
+      deleteInitCmd(idx,cmds) {
+          cmds.splice(idx,1);
+      },
       setIRReader(mac,cmd) {
         cmd.loading = true;
         this.sendUserCommand(mac,cmd).then(()=>{
@@ -357,9 +395,6 @@
         if (location.href.indexOf("https:") != -1) {
           url = url.replace("ws://", "wss://");
         }
-        if ( location.host.indexOf("location") != -1) {
-          url = "ws://localhost:9999/ws?app=guz"
-        }
         let websocket = new WebSocket(url);
         websocket.onopen = function (evt) {
           websocket.send("users");
@@ -420,11 +455,11 @@
         this.drawer.user = user;
         this.drawer.buttons.splice(0);
         this.drawer.visible = true;
-        this.drawer.title = this.getGruopName(groupId);
+        this.drawer.title = this.getGroupName(groupId);
         this.drawer.cmd = cmd;
         this.loadGroupButtons(groupId);
       },
-      getGruopName(gid) {
+      getGroupName(gid) {
         let label = "";
         this.groups.map((g) => {
           if (g.id == gid) {
