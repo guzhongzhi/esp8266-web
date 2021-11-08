@@ -9,81 +9,27 @@
         <ListItem>最后更新: {{user.updatedAt}}</ListItem>
         <ListItem>固件版本: {{user.v}}</ListItem>
         <ListItem  style="text-align: left; display: inline">
-          <Collapse v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
+          <Collapse>
             <Panel>
+              升级
+              <div slot="content">
+                下载地址：<Input v-model="user.binUrl"></Input>
+                <div style="padding:10px 0px;">
+                <Button type="error" @click="sendUpgradeMessage(user)" :loading="upgradeLoading[user.m]">升级</Button>
+                </div>
+              </div>
+            </Panel>
+            <Panel v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
               {{plugin.title}}
               <div  slot="content" v-if="plugin.initialCommands">
                 InitCommands:{{plugin.initialCommands}}
                 <br/>
                 <div v-if="plugin.initialCommands">
                   <div v-for="(cmd,initCmdIdx) in plugin.initialCommands">
+                    <div>
                     <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
                              :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
-
-                    <div style="margin-top:10px; display: none">
-                      <div v-if="cmd.c=='sd'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          值: <input-number v-model="cmd.pin.v"></input-number>
-                          持续时间: <input-number v-model="cmd.pin.t"></input-number>
-                          持续时间后值: <input-number v-model="cmd.pin.tv"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="setPinDigital(user.m,cmd)">{{cmd.pin.v == 0 ? '设置为高电平':'设置为低电平'}}</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='sir'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                        </div>
-                        <Button type="warning" @click="setIRReader(user.m,cmd)">设置红外输入</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='stepper'">
-                        <div style="padding:10px 0px">
-                          <div>
-                            步长: <input-number v-model="cmd.stepper.v" style="width:100px"></input-number> 转多少步
-                          </div>
-                          <div>
-                            PR: <input-number v-model="cmd.stepper.pr" style="width:100px"></input-number> 转多少步
-                          </div>
-                          <div style="padding:10px 0px">
-                            引脚:
-                            <input-number v-model="cmd.stepper.d[0]"></input-number>
-                            <input-number v-model="cmd.stepper.d[1]"></input-number>
-                            <input-number v-model="cmd.stepper.d[2]"></input-number>
-                            <input-number v-model="cmd.stepper.d[3]"></input-number>
-                          </div>
-                        </div>
-                        <Button type="warning" @click="sendStepper(user.m,cmd,false)" :loading="stepperBtnLoading">正转</Button>
-                        <Button type="error" @click="sendStepper(user.m,cmd,true)" :loading="stepperBtnRevLoading">反转</Button>
-                      </div>
-
-                      <div v-if="cmd.buttonGroups">
-
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                        </div>
-
-                        <div style="padding:10px 0px">
-                          红外遥控板:
-                          <Select v-model="cmd.buttonGroups" multiple style="width:100%">
-                            <Option v-for="item in groups" :value="item.id" :key="item.id + '/' + item.name">{{ item.name }}
-                            </Option>
-                          </Select>
-                        </div>
-
-                        <div style="padding:10px 0px;">
-                          <template v-for="item in cmd.buttonGroups">
-                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGroupName(item)}}</Button> &nbsp;
-                          </template>
-                        </div>
-                      </div>
-
-                      <div style="padding:10px 0px;">
-                        <Button type="error" @click="deleteInitCmd(initCmdIdx,plugin.initialCommands)">删除</Button>
-                      </div>
+                      <Button @click="deleteInitCmd(initCmdIdx,plugin.initialCommands)">删除初始命令</Button>
                     </div>
                   </div>
                 </div>
@@ -96,128 +42,9 @@
                       <Button type="success" @click="addToInitialCommands(cmd,plugin)">添加到初始命令</Button>
                       <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
                                :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
-                    <div style="display: none">
-                      <div v-if="cmd.c=='sd'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          值: <input-number v-model="cmd.pin.v"></input-number>
-                          持续时间: <input-number v-model="cmd.pin.t"></input-number>
-                          持续时间后值: <input-number v-model="cmd.pin.tv"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="setPinDigital(user.m,cmd)">{{cmd.pin.v == 0 ? '设置为高电平':'设置为低电平'}}</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='rd'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
-                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="readPinDigital(user.m,cmd)">读取数字信号</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='rt'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
-                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="readTemperature(user.m,cmd)">读取温度</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='ra'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
-                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="readAnalog(user.m,cmd)">读取模拟信号</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='ra0'">
-                        <div>
-                          自动上报<i-switch v-model="cmd.pin.le"></i-switch>
-                          自动上报时间间隔: <input-number v-model="cmd.pin.lpi"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="readAnalog(user.m,cmd)">读取A0模拟信号</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='sa'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                          值: <input-number v-model="cmd.pin.v"></input-number>
-                          持续时间: <input-number v-model="cmd.pin.t"></input-number>
-                          持续时间后值: <input-number v-model="cmd.pin.tv"></input-number>
-                        </div>
-                        <Button :type="cmd.pin.v == 0? 'warning':'error'"
-                                :loading="cmd.loading"
-                                @click="setAnalog(user.m,cmd)">设置模拟信号</Button>
-                      </div>
-
-                      <div v-if="cmd.c=='sir'">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                        </div>
-                        <Button type="warning" @click="setIRReader(user.m,cmd)">否启用红外输入</Button>
-                        <i-switch v-model="user.acceptIR"></i-switch>
-                      </div>
-
-                      <div v-if="cmd.c=='stepper'">
-                        <div style="padding:10px 0px">
-                          <div>
-                            步长: <input-number v-model="cmd.stepper.v" style="width:100px"></input-number> 转多少步
-                          </div>
-                          <div>
-                            PR: <input-number v-model="cmd.stepper.pr" style="width:100px"></input-number> 转多少步
-                          </div>
-                          <div style="padding:10px 0px">
-                            引脚:
-                            <input-number v-model="cmd.stepper.d[0]"></input-number>
-                            <input-number v-model="cmd.stepper.d[1]"></input-number>
-                            <input-number v-model="cmd.stepper.d[2]"></input-number>
-                            <input-number v-model="cmd.stepper.d[3]"></input-number>
-                          </div>
-                        </div>
-                        <Button type="warning" @click="sendStepper(user.m,cmd,false)" :loading="stepperBtnLoading">正转</Button>
-                        <Button type="error" @click="sendStepper(user.m,cmd,true)" :loading="stepperBtnRevLoading">反转</Button>
-                      </div>
-
-                      <div v-if="cmd.buttonGroups">
-                        <div style="padding:10px 0px">
-                          引脚: <input-number v-model="cmd.pin.p"></input-number>
-                        </div>
-                        <div style="padding:10px 0px">
-                          红外遥控板:
-                          <Select v-model="cmd.buttonGroups" multiple style="width:100%">
-                            <Option v-for="item in groups" :value="item.id" :key="item.id + '/' + item.name">{{ item.name }}
-                            </Option>
-                          </Select>
-                        </div>
-
-                        <div style="padding:10px 0px;">
-                          <template v-for="item in cmd.buttonGroups">
-                            <span style="padding:10px">
-                            <Button type="info" @click="goToGroupButtons(item,user,cmd)">{{getGroupName(item)}}</Button> &nbsp;
-                              </span>
-                          </template>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
-
               </div>
-
             </Panel>
           </Collapse>
         </ListItem>
@@ -260,6 +87,7 @@
     data() {
       self = this;
       return {
+        upgradeLoading:{},
         stepperBtnLoading:false,
         stepperBtnRevLoading:false,
         parentDevice:self,
@@ -305,6 +133,23 @@
       },
       deleteInitCmd(idx,cmds) {
           cmds.splice(idx,1);
+      },
+      sendUpgradeMessage(user) {
+        let url = user.binUrl;
+        if(!url) {
+          alert("请输入下载地址");
+          return;
+        }
+        console.log(user)
+        this.$set(this.upgradeLoading,user.m,true);
+        this.sendUserCommand(user.m, {
+          c:"upg",
+          upg:{
+            url:url,
+          }
+        }).then(()=>{
+          this.$set(this.upgradeLoading,user.m,false);
+        })
       },
       setIRReader(mac,cmd) {
         cmd.loading = true;

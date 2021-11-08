@@ -3,14 +3,14 @@
     <div style="text-align: left">
       <Button @click="addNotification" type="success">添加通知</Button>
     </div>
-    <Form :label-width="80">
-    <Tabs value="name1"  v-for="(notify,notifyIndex) in notifications">
+    <Form :label-width="150">
+    <Tabs value="name1" :key="notifyIndex+'-notification'" v-for="(notify,notifyIndex) in notifications">
       <TabPane label="基础信息配置" name="name1">
         <FormItem label="ID">
-          <input v-model="notify.id"></input>
+          <Input v-model="notify.id"></Input>
         </FormItem>
         <FormItem label="MAC">
-          <input v-model="notify.mac"></input>
+          <Input v-model="notify.mac"></Input>
         </FormItem>
         <FormItem label="Type">
           <Select v-model="notify.type" style="width:200px" multiple >
@@ -18,49 +18,58 @@
           </Select>
         </FormItem>
         <FormItem label="Status">
-          <input v-model="notify.status"></input>
+          <Input v-model="notify.status"></Input>
+        </FormItem>
+        <FormItem label="LatestNotifiedAt">
+          <Input v-model="notify.latestNotifiedAt"></Input>
+        </FormItem>
+        <FormItem label="notifiedNumber">
+          <Input v-model="notify.notifiedNumber" type="number"></Input>
+        </FormItem>
+        <FormItem label="notificationSteep">
+          <Input v-model="notify.notificationSteep" type="number"></Input>
         </FormItem>
       </TabPane>
       <TabPane label="条件配置" name="name2">
         <FormItem label="CMD">
-          <input v-model="notify.configuration.cmd"></input>
+          <Input v-model="notify.configuration.cmd"></Input>
         </FormItem>
         <FormItem label="Value">
-          <input v-model="notify.configuration.value"></input>
+          <Input v-model="notify.configuration.value" type="number"></Input>
         </FormItem>
         <FormItem label="Operation">
-          <input v-model="notify.configuration.operation"></input>
+          <Input v-model="notify.configuration.operation"></Input>
         </FormItem>
         <FormItem label="rowNumber">
-          <input v-model="notify.configuration.rowNumber"></input>
+          <Input v-model="notify.configuration.rowNumber"></Input>
         </FormItem>
       </TabPane>
       <TabPane label="HTTP配置" name="name3" v-if="notify.type.indexOf('http') != -1">
         <FormItem label="URL">
-          <input v-model="notify.configuration.url"></input>
+          <Input v-model="notify.configuration.url"></Input>
         </FormItem>
         <FormItem label="Content Type">
-          <input v-model="notify.http.contentType"></input>
+          <Input v-model="notify.http.contentType"></Input>
         </FormItem>
         <FormItem label="Body">
-          <input v-model="notify.http.body"></input>
+          <Input v-model="notify.http.body" type="textarea" :rows="4"></Input>
         </FormItem>
         <FormItem label="method">
-          <input v-model="notify.http.method"></input>
+          <Input v-model="notify.http.method"></Input>
         </FormItem>
       </TabPane>
       <TabPane label="Email配置" name="name4" v-if="notify.type.indexOf('email') != -1">
         <FormItem label="subject">
-          <input v-model="notify.email.subject"></input>
+          <Input v-model="notify.email.subject"></Input>
         </FormItem>
         <FormItem label="body">
-          <input v-model="notify.email.body"></input>
+          <Input v-model="notify.email.body" type="textarea" :rows="4"></Input>
         </FormItem>
         <FormItem label="receivers">
           <div v-for="(re,reIdx) in notify.email.receivers"
                :key="notifyIndex+'-email-'+reIdx"
                style="padding:10px 0px;">
-            <input v-model="notify.email.receivers[reIdx]"></input>
+            <Input v-model="notify.email.receivers[reIdx]"></Input>
           </div>
           <Button @click="addReceiver(notifyIndex)">添加收件人</Button>
         </FormItem>
@@ -80,6 +89,9 @@ export default {
       mac:"",
       type:[],
       status:"",
+      latestNotifiedAt:0,
+      notifiedNumber:0,
+      notificationSteep:0,
       configuration:{
         cmd:"",
         value:0,
@@ -116,21 +128,33 @@ export default {
   },
   mounted() {
     this.$http.post("/api/app/guz/get-notifications", {}).then(res => {
-      console.log(res,resolve);
-      if(resolve) {
-        resolve(res);
-      }
       this.notifications.splice(0,1000)
-      console.log(res);
+      res.data.map((v)=>{
+        if(!v.email) {
+          v.email = {
+            receivers:[]
+          }
+        }
+        if(!v.email.receivers) {
+          v.email.receivers = [];
+        }
+        this.notifications.push(v)
+      })
     });
   },
   methods:{
     saveNotifications() {
-      console.log("saveNotifications");
+      this.notifications.map((n)=>{
+        n.notificationSteep = parseInt(n.notificationSteep)
+        n.configuration.value = parseInt(n.configuration.value)
+      })
+      this.$http.post("/api/app/guz/save-notifications", this.notifications).then(res => {
+        console.log(res.data);
+      });
     },
     addReceiver(idx) {
-      this.notifications[idx].email.receivers.push("eee")
       console.log(this.notifications[idx]);
+      this.notifications[idx].email.receivers.push("")
     },
     addNotification() {
       this.notifications.push(JSON.parse(JSON.stringify(this.defaultNotification)))
