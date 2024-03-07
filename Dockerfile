@@ -1,8 +1,8 @@
 FROM node:18 as builder
 WORKDIR /app
 COPY . ./
-RUN /bin/bash -c "npm install"
-RUN /bin/bash -c "npm run build"
+RUN /bin/sh -c "npm install"
+RUN /bin/sh -c "npm run build"
 
 ---
 
