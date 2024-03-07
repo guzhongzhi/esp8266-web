@@ -22,26 +22,25 @@
             <Panel v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
               {{plugin.title}}
               <div  slot="content" v-if="plugin.initialCommands">
-                InitCommands:{{plugin.initialCommands}}
-                <br/>
                 <div v-if="plugin.initialCommands">
+                  <div>设备初始化命令: </div>
                   <div v-for="(cmd,initCmdIdx) in plugin.initialCommands">
-                    <div>
                     <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
                              :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
-                      <Button @click="deleteInitCmd(initCmdIdx,plugin.initialCommands)">删除初始命令</Button>
+                    <div style="padding: 10px 0px;">
+                      <Button @click="deleteInitCmd(initCmdIdx,plugin.initialCommands)" type="error">删除初始命令</Button>
                     </div>
                   </div>
                 </div>
 
                 <div style="height:20px;border-bottom: solid 1px #e1e1e1;margin-bottom: 20px;"> </div>
                 <div v-if="plugin.commands">
-                  Commands:{{plugin.commands}}
-                  <br/>
                     <div v-for="cmd in plugin.commands">
-                      <Button type="success" @click="addToInitialCommands(cmd,plugin)">添加到初始命令</Button>
                       <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
                                :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
+                      <div style="padding:10px 0px;">
+                        <Button type="success" @click="addToInitialCommands(cmd,plugin)">添加到初始命令</Button>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -209,8 +208,8 @@
         }
         cmd.loading = true;
         this.sendUserCommand(mac,cmd).then((r)=>{
-          console.log("EEEEEE");
           cmd.loading = false;
+          console.log(r);
         })
       },
       formatTimestamp(v) {
@@ -271,9 +270,17 @@
         })
       },
       sendUserIrMessage(mac, btn) {
-        console.log("cmd", this.drawer.cmd);
+        console.log("cmd", this.drawer.cmd,btn);
         btn.loading = true;
-        let data = btn.data.split(",").map((v)=>{
+        if(!Array.isArray(btn.data)) {
+          btn.data = btn.data.replace("{","[").replace("}","]");
+          if(btn.data.indexOf("[") == -1) {
+            btn.data = btn.data.split(",");
+          }else{
+            btn.data = JSON.parse(btn.data);
+          }
+        }
+        let data = btn.data.map((v)=>{
           return parseInt(v);
         })
         this.sendUserCommand(mac, {
@@ -317,6 +324,8 @@
         this.$http.post("/api/app/guz/user/save", {
           m: user.m,
           acceptIR:user.acceptIR,
+          saveIR:user.saveIR,
+          copyIRToMac:user.copyIRToMac,
           title: user.title,
           plugins:user.plugins,
         }).then(res => {
@@ -337,15 +346,16 @@
         }
         m.plugins.map((p)=>{
           p.commands.map((cmd)=>{
+            console.log(cmd)
             cmdIdx++;
-            if(!cmd.id) {
+            if(!cmd.id || cmd.loading === undefined) {
               cmd.loading = false;
             }
           })
 
-          p.initialCommands && p.commands.map((cmd)=>{
+          p.initialCommands && p.initialCommands.map((cmd)=>{
             cmdIdx++;
-            if(!cmd.id) {
+            if(!cmd.id || cmd.loading === undefined) {
               cmd.loading = false;
             }
           })

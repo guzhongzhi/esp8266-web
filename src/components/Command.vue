@@ -73,6 +73,9 @@
     </div>
     <Button type="warning" @click="parentDevice.setIRReader(user.m,cmd)">否启用红外输入</Button>
     <i-switch v-model="user.acceptIR"></i-switch>
+    是否保存接收到的按键:
+    <i-switch v-model="user.saveIR"></i-switch>
+    <Input v-model="user.copyIRToMac"></Input>
   </div>
 
   <div v-if="cmd.c=='stepper'">

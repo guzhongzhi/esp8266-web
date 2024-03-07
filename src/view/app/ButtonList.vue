@@ -18,12 +18,19 @@
     </div>
 
     <div style="margin-bottom: 10px;"></div>
-    <Table border :columns="columns" :data="buttons"></Table>
+    <Table border :row-class-name="rowClassName" :columns="columns" :data="buttons"></Table>
     <div style="margin-bottom: 10px;"></div>
     <page show-total :total="page.total" :current.sync="page.current"></page>
   </div>
 </template>
+<style>
+.table-row-hightlight {
 
+}
+.table-row td {
+  padding: 4px 0px;
+}
+</style>
 <script>
   import Cell from "../../../node_modules/view-design/src/components/cell/cell.vue";
   import Bar from "../../components/Bar.vue";
@@ -46,6 +53,7 @@
         },
         data:[],
         columns:[
+          /*
           {
             title: 'Id',
             key: 'id',
@@ -55,7 +63,33 @@
             title: 'Name',
             key: 'name',
             render: (h, params) => {
-              return h('div', [
+              let divs = [
+                h('div',params.row.id),
+                h('div',params.row.nec),
+              ];
+              if(params.row.createdAt) {
+                let date1 = new Date(params.row.createdAt * 1000);
+                divs.push(h("div",date1.toLocaleDateString().replace(/\//g, "-") + " "+ date1.toTimeString().substr(0, 8)))
+              }
+              return h('div', divs);
+            }
+          },*/
+          {
+            title: 'id/time/name/code/group',
+            key: 'code',
+            render: (h, params) => {
+
+
+              let divs = [
+                h('div',params.row.id),
+                h('div',params.row.nec),
+              ];
+              if(params.row.createdAt) {
+                let date1 = new Date(params.row.createdAt * 1000);
+                divs.push(h("div",date1.toLocaleDateString().replace(/\//g, "-") + " "+ date1.toTimeString().substr(0, 8)))
+              }
+
+              let divs2 = [
                 h('Input', {
                   props: {
                     placeholder:"按键名",
@@ -66,15 +100,7 @@
                       this.buttons[params.index].name = v;
                     },
                   }
-                })
-              ]);
-            }
-          },
-          {
-            title: 'code',
-            key: 'code',
-            render: (h, params) => {
-              return h('div', [
+                }),
                 h('Input', {
                   props: {
                     placeholder:"按键code",
@@ -85,14 +111,37 @@
                       this.buttons[params.index].code = v;
                     },
                   }
-                })
-              ]);
+                }),
+                h('div', [
+                  h('Select', {
+                      props: {
+                        placeholder:"遥控板",
+                        value:params.row.groupID,
+                      },
+                      on: {
+                        input:(v)=>{
+                          this.buttons[params.index].groupID = v;
+                        },
+                      },
+                    },
+                    this.groups.map((g)=>{
+                      return h("Option",{
+                        props:{
+                          value:g.id,
+                          label:g.name+"("+g.id+")",
+                        }
+                      });
+                    }),
+                  ),
+                ])
+              ];
+              return h('div', divs.concat(divs2));
             }
           },
+          /*
           {
             title: 'nec',
             key: 'nec',
-            width:150,
           },
           {
             title: 'repeatCommandNeeded',
@@ -163,7 +212,7 @@
                 ),
               ]);
             }
-          },
+          },/*
           {
             title: '添加时间',
             key: 'created_at',
@@ -174,12 +223,12 @@
               let date1 = new Date(params.row.createdAt * 1000);
               return h("div",date1.toLocaleDateString().replace(/\//g, "-") + " "+ date1.toTimeString().substr(0, 8));
             },
-          },
+          },*/
           {
             title: 'Action',
             key: 'action',
-            width: 150,
             align: 'center',
+            width:100,
             render: (h, params) => {
               return h('div', [
                 h('Button', {
@@ -196,7 +245,7 @@
                     },
                   }
                 }, '保存'),
-                h("span"," "),
+                h("div"," - "),
                 h('Button', {
                   props: {
                     type: 'warning',
@@ -232,6 +281,13 @@
       }
     },
     methods:{
+      rowClassName (row, index) {
+        let className = 'table-row';
+        if (index % 2 ==0) {
+          className += " table-row-hightlight"
+        }
+        return className
+      },
       resetSearchForm() {
         this.searchForm.group = -1;
         this.load();
@@ -254,7 +310,7 @@
             }
             if(this.searchForm.group < 0) {
               this.data.push(v);
-            } else if(this.searchForm.group == v.group) {
+            } else if(this.searchForm.group == v.groupID) {
               this.data.push(v);
             }
             this.goToPage(1);

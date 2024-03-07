@@ -13,12 +13,20 @@
       </FormItem>
     </Form>
 
-    <Table border :columns="columns" :data="groups"></Table>
+    <Table :row-class-name="rowClassName" border :columns="columns" :data="groups"></Table>
 
     <div style="margin-bottom: 10px;"></div>
   </div>
 </template>
 
+<style>
+.table-row-hightlight {
+
+}
+.table-row td {
+  padding: 4px 0px;
+}
+</style>
 <script>
   import Cell from "../../../node_modules/view-design/src/components/cell/cell.vue";
   import Bar from "../../components/Bar.vue";
@@ -32,15 +40,12 @@
       return {
         columns:[
           {
-            title: 'Id',
-            key: 'id',
-            width:100,
-          },
-          {
             title: 'Name',
             key: 'name',
             render: (h, params) => {
               return h('div', [
+                h('div',params.row.id),
+                h('div',params.row.created_at),
                 h('Input', {
                   props: {
                     placeholder:"遥控板名",
@@ -56,34 +61,32 @@
             }
           },
           {
-            title: '添加时间',
-            key: 'created_at'
-          },
-          {
             title: 'Action',
             key: 'action',
-            width: 150,
+            width: 100,
             align: 'center',
             render: (h, params) => {
               return h('div', [
-                h('Button', {
-                  props: {
-                    type: 'primary',
-                    size: 'small',
-                  },
-                  on: {
-                    click: () => {
-                      this.$http.post("/api/app/guz/button/group-save",{
-                        id:this.groups[params.index].id,
-                        name:this.groups[params.index].name,
-                      }).then(res=>{
-                        console.log(res);
-                        this.load();
-                      })
+                h("div",[
+                  h('Button', {
+                    props: {
+                      type: 'primary',
+                      size: 'small',
                     },
-                  }
-                }, '保存'),
-                h("span"," "),
+                    on: {
+                      click: () => {
+                        this.$http.post("/api/app/guz/button/group-save",{
+                          id:this.groups[params.index].id,
+                          name:this.groups[params.index].name,
+                        }).then(res=>{
+                          console.log(res);
+                          this.load();
+                        })
+                      },
+                    }
+                  }, '保存')
+                ]),
+                h('div','-'),
                 h('Button', {
                   props: {
                     type: 'error',
@@ -125,6 +128,13 @@
       this.load();
     },
     methods:{
+      rowClassName (row, index) {
+        let className = 'table-row';
+        if (index % 2 ==0) {
+          className += " table-row-hightlight"
+        }
+        return className
+      },
       handleSubmit(name) {
         this.$refs[name].validate((valid) => {
           if (valid) {
