@@ -6,6 +6,6 @@ RUN /bin/sh -c "npm run build --registry=http://registry.npmmirror.com"
 
 #---
 FROM nginx
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 
