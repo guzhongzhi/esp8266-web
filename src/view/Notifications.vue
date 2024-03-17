@@ -46,7 +46,7 @@
       </TabPane>
       <TabPane label="HTTP配置" name="name3" v-if="notify.type.indexOf('http') != -1">
         <FormItem label="URL">
-          <Input v-model="notify.configuration.url"></Input>
+          <Input v-model="notify.http.url"></Input>
         </FormItem>
         <FormItem label="Content Type">
           <Input v-model="notify.http.contentType"></Input>
