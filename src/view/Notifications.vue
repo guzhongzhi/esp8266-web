@@ -18,7 +18,9 @@
           </Select>
         </FormItem>
         <FormItem label="Status">
-          <Input v-model="notify.status"></Input>
+          <Select v-model="notify.status" style="width:200px"  >
+            <Option v-for="item in booleanOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
+          </Select>
         </FormItem>
         <FormItem label="LatestNotifiedAt">
           <Input v-model="notify.latestNotifiedAt"></Input>
@@ -42,6 +44,7 @@
         </FormItem>
         <FormItem label="rowNumber">
           <Input v-model="notify.configuration.rowNumber"></Input>
+          <p>最近多少条数据取平均数</p>
         </FormItem>
       </TabPane>
       <TabPane label="HTTP配置" name="name3" v-if="notify.type.indexOf('http') != -1">
@@ -81,8 +84,13 @@
 </template>
 
 <script>
+import Switch from "view-design";
+
 export default {
   name: "Notifications",
+  components:{
+    Switch
+  },
   data() {
     let defaultNotification = {
       id:"x",
@@ -118,6 +126,16 @@ export default {
         {
           label:"Email",
           value:"email"
+        },
+      ],
+      booleanOptions:[
+        {
+          label:"Disabled",
+          value:"disabled",
+        },
+        {
+          label:"Enabled",
+          value:"enabled"
         },
       ],
       defaultNotification:defaultNotification,
