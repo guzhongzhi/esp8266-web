@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <bar title="应用管理" :closable="false" icon="md-settings"></bar>
-    <Table :columns="columns1" :data="data1"></Table>
+    <Table style="margin-top: 42px;" :columns="columns1" :data="data1"></Table>
 
     <div style="padding:10px;">
     <Button @click="goToNotifications" type="error">
@@ -65,24 +65,6 @@
             address: 'New York No. 1 Lake Park',
             date: '2016-10-03'
           },
-          {
-            name: 'Jim Green',
-            age: 24,
-            address: 'London No. 1 Lake Park',
-            date: '2016-10-01'
-          },
-          {
-            name: 'Joe Black',
-            age: 30,
-            address: 'Sydney No. 1 Lake Park',
-            date: '2016-10-02'
-          },
-          {
-            name: 'Jon Snow',
-            age: 26,
-            address: 'Ottawa No. 2 Lake Park',
-            date: '2016-10-04'
-          }
         ]
       }
     },
