@@ -5,7 +5,9 @@
         <ListItem>客户端名: &nbsp;
           <Input v-model="user.title" placeholder="客户端名" style="width: 300px"/>
         </ListItem>
+        <ListItem>ID: &nbsp;{{user.id}}</ListItem>
         <ListItem>WIFI: &nbsp;{{user.w}}</ListItem>
+        <ListItem>IP: &nbsp;{{user.i}}</ListItem>
         <ListItem>最后更新: {{user.updatedAt}}</ListItem>
         <ListItem>固件版本: {{user.v}}</ListItem>
         <ListItem  style="text-align: left; display: inline">
