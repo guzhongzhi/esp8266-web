@@ -13,7 +13,7 @@
         <ListItem>
           <div style="display: block;width: 100%">
             <div style="padding:10px 0px;text-align: left">
-              Second: 秒 Minute: 分 Hour: 时 Dom: 日 Month: 月 Dow: 周
+              Minute: 分 Hour: 时 Dom: 日 Month: 月 Dow: 周
             </div>
             <div v-if="user.crons && Array.isArray(user.crons)">
               <div v-for="cron in user.crons" style="width: 100%">
@@ -22,7 +22,10 @@
                     <td width="300"><Input v-model="cron.cron"/></td>
                     <td>
                       <Select v-model="cron.plugin">
-                        <Option v-for="item in user.plugins" :value="item.title" :key="item.title">{{ item.title }}</Option>
+                        <OptionGroup :label="plugin.title"  v-for="plugin in user.plugins">
+                          <Option v-for="(item,cmdIndex) in plugin.commands"
+                                  :value="plugin.title +'/'+cmdIndex" :key="plugin.title +'/'+cmdIndex">{{ plugin.title + '/' + cmdIndex }}</Option>
+                        </OptionGroup>
                       </Select>
                     </td>
                     <td>
@@ -69,12 +72,14 @@
                 <div v-if="plugin.commands">
                     <div v-for="cmd in plugin.commands">
                       <Command :cmd="cmd" :user="user" :parent-device="parentDevice"
-                               :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading"></Command>
+                               :stepper-btn-loading="stepperBtnLoading" :stepper-btn-rev-loading="stepperBtnRevLoading">
+                      </Command>
                       <div style="padding:10px 0px;">
                         <Button type="success" @click="addToInitialCommands(cmd,plugin)">添加到初始命令</Button>
                       </div>
                   </div>
                 </div>
+                <Button @click="()=>{addCommand(plugin)}" type="primary">添加命令</Button>
               </div>
             </Panel>
           </Collapse>
@@ -162,6 +167,10 @@
       this.ws();
     },
     methods: {
+      addCommand(plugin) {
+        let cmd = JSON.parse(JSON.stringify(plugin.commands[0]))
+        plugin.commands.push(cmd);
+      },
       addCron(user) {
         if(!user.crons) {
           user.crons = [];
