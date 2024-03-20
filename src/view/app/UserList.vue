@@ -10,6 +10,36 @@
         <ListItem>IP: &nbsp;{{user.i}}</ListItem>
         <ListItem>最后更新: {{user.updatedAt}}</ListItem>
         <ListItem>固件版本: {{user.v}}</ListItem>
+        <ListItem>
+          <div style="display: block;width: 100%">
+            <div style="padding:10px 0px;text-align: left">
+              Second: 秒 Minute: 分 Hour: 时 Dom: 日 Month: 月 Dow: 周
+            </div>
+            <div v-if="user.crons && Array.isArray(user.crons)">
+              <div v-for="cron in user.crons" style="width: 100%">
+                <table style="width: 100%;text-align: left">
+                  <tr>
+                    <td width="300"><Input v-model="cron.cron"/></td>
+                    <td>
+                      <Select v-model="cron.plugin">
+                        <Option v-for="item in user.plugins" :value="item.title" :key="item.title">{{ item.title }}</Option>
+                      </Select>
+                    </td>
+                    <td>
+                      <Select v-model="cron.status" >
+                        <Option v-for="item in statusOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                      </Select>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            <div style="padding:10px 0px">
+              <Button type="success" @click="()=>{addCron(user)}">添加定时任务</Button>
+            </div>
+
+          </div>
+        </ListItem>
         <ListItem  style="text-align: left; display: inline">
           <Collapse>
             <Panel>
@@ -88,6 +118,10 @@
     data() {
       self = this;
       return {
+        statusOptions:[
+          {label:"启用",value:1},
+          {label:"禁用",value:0},
+        ],
         upgradeLoading:{},
         stepperBtnLoading:false,
         stepperBtnRevLoading:false,
@@ -128,6 +162,15 @@
       this.ws();
     },
     methods: {
+      addCron(user) {
+        if(!user.crons) {
+          user.crons = [];
+        }
+        user.crons.push({
+          cron:"",
+          status:1,
+        })
+      },
       addToInitialCommands(cmd,plugin) {
         console.log(plugin);
         plugin.initialCommands.push(JSON.parse(JSON.stringify(cmd)));
@@ -330,6 +373,7 @@
           copyIRToMac:user.copyIRToMac,
           title: user.title,
           plugins:user.plugins,
+          crons: user.crons,
         }).then(res => {
           console.log(res)
         })
