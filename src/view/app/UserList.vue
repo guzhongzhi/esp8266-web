@@ -28,6 +28,24 @@
                         </OptionGroup>
                       </Select>
                     </td>
+                    <template v-if="cron.plugin && cron.plugin.indexOf('遥控板') != -1">
+                      <td>
+                        <Select v-model="cron.group">
+                            <Option v-for="group in groups"
+                                    :value="group.id"
+                                    :key="group.id">{{ group.name }}</Option>
+                        </Select>
+                      </td>
+                      <td>
+                        <Select v-model="cron.button">
+                          <template v-for="group in groups" v-if="group.id == cron.group">
+                            <Option v-for="button in group.buttons"
+                                    :value="button.id"
+                                    :key="button.id">{{ button.name }}</Option>
+                          </template>
+                        </Select>
+                      </td>
+                    </template>
                     <td>
                       <Select v-model="cron.status" >
                         <Option v-for="item in statusOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -167,6 +185,18 @@
       this.ws();
     },
     methods: {
+      getGroupButtons(groupID) {
+        console.log(groupID)
+        let buttons = [];
+        this.drawer.buttons.map((item)=>{
+          console.log(item)
+          if(item.groupID == groupID) {
+            buttons.push(item)
+          }
+        })
+        console.log(buttons)
+        return buttons;
+      },
       addCommand(plugin) {
         let cmd = JSON.parse(JSON.stringify(plugin.commands[0]))
         plugin.commands.push(cmd);
@@ -388,9 +418,18 @@
         })
       },
       loadGroups() {
-        this.$http.get("/api/app/guz/button/groups").then(res => {
-          Object.values(res.data).map((v) => {
-            this.groups.push(v);
+        this.$http.get("/api/app/guz/buttons").then((res)=>{
+          let buttons = res.data
+          this.$http.get("/api/app/guz/button/groups").then(res => {
+            Object.values(res.data).map((v) => {
+              v.buttons =[];
+              buttons.map((button)=>{
+                if(button.groupID == v.id) {
+                  v.buttons.push(button);
+                }
+              })
+              this.groups.push(v);
+            })
           })
         })
       },
