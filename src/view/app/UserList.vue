@@ -73,7 +73,7 @@
               </div>
             </Panel>
             <Panel v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
-              {{plugin.title}} &nbsp;&nbsp;<Button size="mini" @click="(e)=>{deletePlugin(e,user,pluginIndex)}">删除</Button>
+              {{plugin.title}} &nbsp;&nbsp;<Button size="mini" @click="(e)=>{deletePlugin(e,user,pluginIdx)}">删除</Button>
               <div  slot="content" v-if="plugin.initialCommands">
                 <div v-if="plugin.initialCommands">
                   <div>设备初始化命令: </div>
