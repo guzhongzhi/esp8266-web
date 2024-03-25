@@ -73,7 +73,7 @@
               </div>
             </Panel>
             <Panel v-for="(plugin,pluginIdx) in user.plugins" :key="pluginIdx" style="width: 100%">
-              {{plugin.title}}
+              {{plugin.title}} <Button @click="()=>{deletePlugin(user,pluginIndex)}">删除</Button>
               <div  slot="content" v-if="plugin.initialCommands">
                 <div v-if="plugin.initialCommands">
                   <div>设备初始化命令: </div>
@@ -185,6 +185,9 @@
       this.ws();
     },
     methods: {
+      deletePlugin(user,pluginIndex) {
+        user.plugins.splice(pluginIndex,1)
+      },
       getGroupButtons(groupID) {
         console.log(groupID)
         let buttons = [];
