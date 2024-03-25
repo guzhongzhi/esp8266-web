@@ -16,7 +16,7 @@
               Minute: 分 Hour: 时 Dom: 日 Month: 月 Dow: 周
             </div>
             <div v-if="user.crons && Array.isArray(user.crons)">
-              <div v-for="cron in user.crons" style="width: 100%">
+              <div v-for="(cron,cronIdx) in user.crons" style="width: 100%">
                 <table style="width: 100%;text-align: left">
                   <tr>
                     <td width="300"><Input v-model="cron.cron"/></td>
@@ -50,6 +50,9 @@
                       <Select v-model="cron.status" >
                         <Option v-for="item in statusOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
                       </Select>
+                    </td>
+                    <td>
+                      <Button @click="()=>{deleteCron(user,cronIdx)}">删除</Button>
                     </td>
                   </tr>
                 </table>
@@ -185,6 +188,9 @@
       this.ws();
     },
     methods: {
+      deleteCron(user,cronIdx){
+        user.crons.splice(cronIdx,1);
+      },
       deletePlugin(e,user,pluginIndex) {
         user.plugins.splice(pluginIndex,1)
         e.stopPropagation();
