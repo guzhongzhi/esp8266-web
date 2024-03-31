@@ -10,7 +10,9 @@ import ViewUI from 'view-design';
 import 'view-design/dist/styles/iview.css';
 
 import axios from 'axios'
-import moment from 'moment'; //导入模块
+import moment from 'moment';
+import VConsole from 'vconsole';
+
 moment.locale('zh-cn');
 
 Vue.prototype.$http = axios;
@@ -18,6 +20,8 @@ Vue.prototype.$moment = moment;
 Vue.use(ViewUI, {
   transfer: true,
 });
+
+new VConsole();
 
 /* eslint-disable no-new */
 new Vue({

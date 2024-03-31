@@ -13,7 +13,8 @@ module.exports = {
     proxyTable: {
       '/api': {
         //target: 'http://ctl.home.gulusoft.com/',
-        target: 'http://localhost:8000/',
+        //target: 'https://esp8266-k8s.rtbear.com/',
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
         pathRewrite: {
           '^/api/': '/api/'

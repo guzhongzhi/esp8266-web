@@ -22,7 +22,7 @@
                     <td width="300"><Input v-model="cron.cron"/></td>
                     <td>
                       <Select v-model="cron.plugin">
-                        <OptionGroup :label="plugin.title"  v-for="plugin in user.plugins">
+                        <OptionGroup :label="plugin.title"  v-for="plugin in user.plugins" :key="plugin.title">
                           <Option v-for="(item,cmdIndex) in plugin.commands"
                                   :value="plugin.title +'/'+cmdIndex" :key="plugin.title +'/'+cmdIndex">{{ plugin.title + '/' + cmdIndex }}</Option>
                         </OptionGroup>
