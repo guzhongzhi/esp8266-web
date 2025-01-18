@@ -295,7 +295,7 @@
         })
       },
       setPinDigital(mac,cmd,btn) {
-	if(cmd.pin.t > 0) {
+	if(cmd.pin.t == 0) {
         if(cmd.pin.v == 0) {
           cmd.pin.v = 1;
         } else {
