@@ -9,7 +9,7 @@
     </div>
     <Button :type="cmd.pin.v == 0? 'warning':'error'"
             :loading="cmd.loading"
-            @click="parentDevice.setPinDigital(user.m,cmd)">{{cmd.pin.v == 0 ? '设置为高电平':'设置为低电平'}}</Button>
+            @click="parentDevice.setPinDigital(user.m,cmd)">{{cmd.pin.v == 1 ? '设置为高电平':'设置为低电平'}}</Button>
   </div>
 
   <div v-if="cmd.c=='rd'">
